@@ -143,9 +143,11 @@ class RSCoder(object):
 
         # Turn r into a polynomial
         r = Polynomial(self.GFint(x) for x in r)
+        # print r
 
         # Compute the syndromes:
         sz = self._syndromes(r)
+        # print sz
 
         # Find the error locator polynomial and error evaluator polynomial
         # using the Berlekamp-Massey algorithm
@@ -156,11 +158,13 @@ class RSCoder(object):
         # being the rightmost position
         # X is a corresponding array of GF(5) values where X_i = self.alpha^(j_i)
         X, j = self._chien_search(sigma)
+        # print X,j
 
         # And finally, find the error magnitudes with Forney's Formula
         # Y is an array of GF(5) values corresponding to the error magnitude
         # at the position given by the j array
         Y = self._forney(omega, X)
+        # print Y
 
         # Put the error and locations together to form the error polynomial
         Elist = []
@@ -170,9 +174,11 @@ class RSCoder(object):
             else:
                 Elist.append(self.GFint(0))
         E = Polynomial(reversed(Elist))
+        # print E
 
         # And we get our real codeword!
         c = r - E
+        # print c
 
         # Form it back into a string and return all but the last n-k bytes
         ret = list(c.coefficients[:-(n - k)])
@@ -321,11 +327,14 @@ class RSCoder(object):
         for l in xrange(1,self.GFint.p**self.GFint.n):
             # These evaluations could be more efficient, but oh well
             if sigma.evaluate( p**l ) == 0:
+                # print l
                 X.append( p**(-l) )
                 # This is different than the notes, I think the notes were in error
                 # Notes said j values were just l, when it's actually 4-l
+                ## Leon test
                 j.append(self.GFint.p**self.GFint.n - l - 1)
-
+                #j.append(l)
+                # print 'X,j', X,j
         return X, j
 
     def _forney(self, omega, X):

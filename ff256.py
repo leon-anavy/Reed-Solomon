@@ -1,13 +1,16 @@
 # Copyright (c) 2010 Andrew Brown <brownan@cs.duke.edu, brownan@gmail.com>
 # See LICENSE.txt for license terms
 
-class GF256int(int):
+class GFint(int):
     """Instances of this object are elements of the field GF(2^8)
     Instances are integers in the range 0 to 255
     This field is defined using the irreducable polynomial
     x^8 + x^4 + x^3 + x + 1
     and using 3 as the generator for the exponent table and log table.
     """
+    n = 8
+    p = 2
+    alpha = 3
     # Maps integers to GF256int instances
     cache = {}
     # Exponent table for 3, a generator for GF(256)
@@ -55,18 +58,18 @@ class GF256int(int):
         # Caching sacrifices a bit of speed for less memory usage. This way,
         # there are only a max of 256 instances of this class at any time.
         try:
-            return GF256int.cache[value]
+            return GFint.cache[value]
         except KeyError:
             if value > 255 or value < 0:
                 raise ValueError("Field elements of GF(2^8) are between 0 and 255. Cannot be %s" % value)
 
             newval = int.__new__(cls, value)
-            GF256int.cache[int(value)] = newval
+            GFint.cache[int(value)] = newval
             return newval
 
     def __add__(a, b):
         "Addition in GF(2^8) is the xor of the two"
-        return GF256int(a ^ b)
+        return GFint(a ^ b)
     __sub__ = __add__
     __radd__ = __add__
     __rsub__ = __add__
@@ -76,26 +79,26 @@ class GF256int(int):
     def __mul__(a, b):
         "Multiplication in GF(2^8)"
         if a == 0 or b == 0:
-            return GF256int(0)
-        x = GF256int.logtable[a]
-        y = GF256int.logtable[b]
+            return GFint(0)
+        x = GFint.logtable[a]
+        y = GFint.logtable[b]
         z = (x + y) % 255
-        return GF256int(GF256int.exptable[z])
+        return GFint(GFint.exptable[z])
     __rmul__ = __mul__
 
     def __pow__(self, power):
-        if isinstance(power, GF256int):
+        if isinstance(power, GFint):
             raise TypeError("Raising a Field element to another Field element is not defined. power must be a regular integer")
-        x = GF256int.logtable[self]
+        x = GFint.logtable[self]
         z = (x * power) % 255
-        return GF256int(GF256int.exptable[z])
+        return GFint(GFint.exptable[z])
 
     def inverse(self):
-        e = GF256int.logtable[self]
-        return GF256int(GF256int.exptable[255 - e])
+        e = GFint.logtable[self]
+        return GFint(GFint.exptable[255 - e])
 
     def __div__(self, other):
-        return self * GF256int(other).inverse()
+        return self * GFint(other).inverse()
     def __rdiv__(self, other):
         return self.inverse() * other
 
@@ -121,5 +124,5 @@ class GF256int(int):
             p = p << 1
             if p & 0x100: p = p ^ 0x11b
 
-        return GF256int(r)
+        return GFint(r)
         
